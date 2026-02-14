@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAMILY GROUP - Семейный мессенджер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .welcome-screen, .create-group-screen, .join-group-screen, .messenger-screen {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 60px 50px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                        0 0 60px rgba(147, 51, 234, 0.5),
+                        inset 0 0 40px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+            animation: floatIn 1s ease-out, glow 3s ease-in-out infinite;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .messenger-screen {
+            max-width: 1200px;
+            width: 95%;
+            height: 90vh;
+            padding: 0;
+            display: none;
+            flex-direction: row;
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                            0 0 60px rgba(147, 51, 234, 0.5),
+                            inset 0 0 40px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                            0 0 80px rgba(236, 72, 153, 0.7),
+                            inset 0 0 40px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .create-group-screen, .join-group-screen {
+            display: none;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            background: linear-gradient(45deg, #fff, #f0abfc, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            animation: textGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+            50% { filter: drop-shadow(0 0 20px rgba(240, 171, 252, 1)); }
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+            margin-bottom: 50px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 18px 45px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            box-shadow: 0 15px 35px rgba(240, 147, 251, 0.6);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .avatar-upload {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-upload:hover {
+            border-color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        .avatar-upload img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .plus-icon {
+            font-size: 3em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .upload-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        #avatarInput {
+            display: none;
+        }
+
+        .code-option {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .captcha-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .captcha-question {
+            color: white;
+            font-size: 1.2em;
+        }
+
+        input[type="checkbox"] {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 25px;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Messenger Styles */
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .group-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .group-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .group-name {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .group-code {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+        }
+
+        .members-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .member-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .member-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            color: white;
+            font-weight: 500;
+        }
+
+        .member-role {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85em;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .message-author {
+            color: #f093fb;
+            font-weight: 600;
+        }
+
+        .message-role {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85em;
+        }
+
+        .message-time {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+
+        .message-text {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 15px;
+            color: white;
+            line-height: 1.5;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .role-select-screen {
+            display: none;
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .role-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .role-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: white;
+        }
+
+        .role-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .role-name {
+            color: white;
+            font-weight: 600;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1>FAMILY GROUP</h1>
+            <p class="subtitle">Семейный мессенджер для близких</p>
+            <button class="btn" onclick="showJoinGroup()">Ввести код</button>
+            <button class="btn btn-secondary" onclick="showCreateGroup()">Создать группу</button>
+        </div>
+
+        <!-- Create Group Screen -->
+        <div class="create-group-screen" id="createGroupScreen">
+            <h1>Создание группы</h1>
+            
+            <div class="avatar-upload" onclick="document.getElementById('avatarInput').click()">
+                <div class="plus-icon">+</div>
+                <div class="upload-text">Добавить аватарку</div>
+                <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)">
+            </div>
+
+            <input type="text" class="input-field" id="groupName" placeholder="Название группы">
+
+            <div class="code-option">
+                <input type="text" class="input-field" id="customCode" placeholder="Введите свой код (6 символов)" maxlength="6" style="flex: 1;">
+                <button class="btn" onclick="generateCode()" style="margin: 0;">Генерировать</button>
+            </div>
+
+            <div class="captcha-box">
+                <span class="captcha-question">Вы человек?</span>
+                <input type="checkbox" id="captcha">
+            </div>
+
+            <button class="btn btn-secondary" onclick="createGroup()">Создать группу</button>
+            <button class="btn back-btn" onclick="showWelcome()">Назад</button>
+
+            <div class="loading" id="createLoading">
+                <div class="spinner"></div>
+                <p>Создаём вашу семейную группу...</p>
+            </div>
+        </div>
+
+        <!-- Join Group Screen -->
+        <div class="join-group-screen" id="joinGroupScreen">
+            <h1>Вход в группу</h1>
+            
+            <input type="text" class="input-field" id="joinCode" placeholder="Введите код группы" maxlength="6">
+
+            <div class="captcha-box">
+                <span class="captcha-question">Вы человек?</span>
+                <input type="checkbox" id="joinCaptcha">
+            </div>
+
+            <button class="btn btn-secondary" onclick="joinGroup()">Войти</button>
+            <button class="btn back-btn" onclick="showWelcome()">Назад</button>
+        </div>
+
+        <!-- Role Select Screen -->
+        <div class="join-group-screen role-select-screen" id="roleSelectScreen">
+            <h1>Выберите вашу роль</h1>
+            
+            <div class="role-grid">
+                <div class="role-card" onclick="selectRole('Папа', '👨')">
+                    <div class="role-icon">👨</div>
+                    <div class="role-name">Папа</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Мама', '👩')">
+                    <div class="role-icon">👩</div>
+                    <div class="role-name">Мама</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Сын', '👦')">
+                    <div class="role-icon">👦</div>
+                    <div class="role-name">Сын</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Дочь', '👧')">
+                    <div class="role-icon">👧</div>
+                    <div class="role-name">Дочь</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Дедушка', '👴')">
+                    <div class="role-icon">👴</div>
+                    <div class="role-name">Дедушка</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Бабушка', '👵')">
+                    <div class="role-icon">👵</div>
+                    <div class="role-name">Бабушка</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Прадедушка', '👴')">
+                    <div class="role-icon">👴</div>
+                    <div class="role-name">Прадедушка</div>
+                </div>
+                <div class="role-card" onclick="selectRole('Прабабушка', '👵')">
+                    <div class="role-icon">👵</div>
+                    <div class="role-name">Прабабушка</div>
+                </div>
+            </div>
+
+            <input type="text" class="input-field" id="memberName" placeholder="Введите ваше имя">
+            
+            <button class="btn btn-secondary" onclick="enterMessenger()">Войти в чат</button>
+        </div>
+
+        <!-- Messenger Screen -->
+        <div class="messenger-screen" id="messengerScreen">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="group-avatar" id="sidebarGroupAvatar">FG</div>
+                    <div class="group-name" id="sidebarGroupName">Family Group</div>
+                    <div class="group-code" id="sidebarGroupCode">Код: ------</div>
+                </div>
+                <div class="members-list" id="membersList">
+                    <!-- Members will be added here -->
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <div class="chat-header">
+                    <div class="group-avatar" id="chatGroupAvatar">FG</div>
+                    <div class="group-name" id="chatGroupName">Family Group</div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here -->
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" id="messageInput" placeholder="Напишите сообщение...">
+                        <button class="send-btn" onclick="sendMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Particles configuration
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: ['#ffffff', '#f0abfc', '#c084fc'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: { enable: true, mode: 'repulse' },
+                    onclick: { enable: true, mode: 'push' },
+                    resize: true
+                },
+                modes: {
+                    repulse: { distance: 100, duration: 0.4 },
+                    push: { particles_nb: 4 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Global variables
+        let currentGroup = null;
+        let currentUser = null;
+        let groupAvatar = null;
+
+        // Screen navigation
+        function showWelcome() {
+            document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('createGroupScreen').style.display = 'none';
+            document.getElementById('joinGroupScreen').style.display = 'none';
+            document.getElementById('roleSelectScreen').style.display = 'none';
+            document.getElementById('messengerScreen').style.display = 'none';
+        }
+
+        function showCreateGroup() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('createGroupScreen').style.display = 'block';
+        }
+
+        function showJoinGroup() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('joinGroupScreen').style.display = 'block';
+        }
+
+        // Avatar preview
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    groupAvatar = e.target.result;
+                    const avatarDiv = document.querySelector('.avatar-upload');
+                    avatarDiv.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Generate random code
+        function generateCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('customCode').value = code;
+        }
+
+        // Create group
+        function createGroup() {
+            const groupName = document.getElementById('groupName').value;
+            const code = document.getElementById('customCode').value;
+            const captcha = document.getElementById('captcha').checked;
+
+            if (!groupName) {
+                alert('Введите название группы!');
+                return;
+            }
+
+            if (code.length !== 6) {
+                alert('Код должен содержать 6 символов!');
+                return;
+            }
+
+            if (!captcha) {
+                alert('Подтвердите, что вы человек!');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('createLoading').style.display = 'block';
+
+            // Simulate creation
+            setTimeout(() => {
+                currentGroup = {
+                    name: groupName,
+                    code: code,
+                    avatar: groupAvatar,
+                    members: [],
+                    messages: []
+                };
+
+                // Save to localStorage
+                saveGroup();
+
+                // Show role selection
+                document.getElementById('createLoading').style.display = 'none';
+                document.getElementById('createGroupScreen').style.display = 'none';
+                document.getElementById('roleSelectScreen').style.display = 'block';
+            }, 2000);
+        }
+
+        // Join group
+        function joinGroup() {
+            const code = document.getElementById('joinCode').value;
+            const captcha = document.getElementById('joinCaptcha').checked;
+
+            if (code.length !== 6) {
+                alert('Код должен содержать 6 символов!');
+                return;
+            }
+
+            if (!captcha) {
+                alert('Подтвердите, что вы человек!');
+                return;
+            }
+
+            // Load group from localStorage
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            
+            if (savedGroups[code]) {
+                currentGroup = savedGroups[code];
+                document.getElementById('joinGroupScreen').style.display = 'none';
+                document.getElementById('roleSelectScreen').style.display = 'block';
+            } else {
+                alert('Группа с таким кодом не найдена!');
+            }
+        }
+
+        // Select role
+        let selectedRole = null;
+        let selectedIcon = null;
+
+        function selectRole(role, icon) {
+            selectedRole = role;
+            selectedIcon = icon;
+            
+            // Highlight selected role
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Enter messenger
+        function enterMessenger() {
+            const name = document.getElementById('memberName').value;
+
+            if (!selectedRole) {
+                alert('Выберите вашу роль в семье!');
+                return;
+            }
+
+            if (!name) {
+                alert('Введите ваше имя!');
+                return;
+            }
+
+            currentUser = {
+                name: name,
+                role: selectedRole,
+                icon: selectedIcon,
+                id: Date.now()
+            };
+
+            // Add user to group
+            if (!currentGroup.members.find(m => m.id === currentUser.id)) {
+                currentGroup.members.push(currentUser);
+                saveGroup();
+            }
+
+            // Show messenger
+            document.getElementById('roleSelectScreen').style.display = 'none';
+            document.getElementById('messengerScreen').style.display = 'flex';
+
+            // Initialize messenger
+            initializeMessenger();
+        }
+
+        // Initialize messenger
+        function initializeMessenger() {
+            // Set group info
+            const groupNameEls = document.querySelectorAll('#sidebarGroupName, #chatGroupName');
+            groupNameEls.forEach(el => el.textContent = currentGroup.name);
+            
+            document.getElementById('sidebarGroupCode').textContent = `Код: ${currentGroup.code}`;
+
+            // Set group avatar
+            const avatarEls = document.querySelectorAll('#sidebarGroupAvatar, #chatGroupAvatar');
+            if (currentGroup.avatar) {
+                avatarEls.forEach(el => {
+                    el.innerHTML = `<img src="${currentGroup.avatar}" alt="Group">`;
+                });
+            } else {
+                avatarEls.forEach(el => {
+                    el.textContent = currentGroup.name.substring(0, 2).toUpperCase();
+                });
+            }
+
+            // Load members
+            loadMembers();
+            
+            // Load messages
+            loadMessages();
+
+            // Auto-refresh messages every 2 seconds
+            setInterval(loadMessages, 2000);
+        }
+
+        // Load members
+        function loadMembers() {
+            const membersList = document.getElementById('membersList');
+            membersList.innerHTML = '';
+
+            currentGroup.members.forEach(member => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'member-item';
+                memberDiv.innerHTML = `
+                    <div class="member-avatar">${member.icon}</div>
+                    <div class="member-info">
+                        <div class="member-name">${member.name}</div>
+                        <div class="member-role">${member.role}</div>
+                    </div>
+                `;
+                membersList.appendChild(memberDiv);
+            });
+        }
+
+        // Load messages
+        function loadMessages() {
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            if (savedGroups[currentGroup.code]) {
+                currentGroup.messages = savedGroups[currentGroup.code].messages || [];
+            }
+
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+
+            currentGroup.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">${msg.userIcon}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">${msg.userName}</span>
+                            <span class="message-role">${msg.userRole}</span>
+                            <span class="message-time">${msg.time}</span>
+                        </div>
+                        <div class="message-text">${msg.text}</div>
+                    </div>
+                `;
+                chatMessages.appendChild(messageDiv);
+            });
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const message = {
+                userName: currentUser.name,
+                userRole: currentUser.role,
+                userIcon: currentUser.icon,
+                text: text,
+                time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: Date.now()
+            };
+
+            currentGroup.messages.push(message);
+            saveGroup();
+            loadMessages();
+
+            input.value = '';
+        }
+
+        // Enter key to send
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+
+        // Save group to localStorage
+        function saveGroup() {
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            savedGroups[currentGroup.code] = currentGroup;
+            localStorage.setItem('familyGroups', JSON.stringify(savedGroups));
+        }
+
+        // Load saved group on page load
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+                if (savedGroups[code]) {
+                    document.getElementById('joinCode').value = code;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
