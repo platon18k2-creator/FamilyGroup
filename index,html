@@ -224,6 +224,12 @@
             display: none;
         }
 
+        .code-option {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
         .captcha-box {
             background: rgba(255, 255, 255, 0.15);
             padding: 20px;
@@ -257,6 +263,25 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .debug-btn {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 20px;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -276,36 +301,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .link-box {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 15px;
-            margin: 20px 0;
-            display: none;
-        }
-
-        .link-display {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 10px;
-            color: #4facfe;
-            font-size: 0.9em;
-            word-break: break-all;
-            margin: 10px 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .copy-btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            padding: 10px 30px;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-
-        .copy-btn:hover {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
         }
 
         /* Messenger Styles */
@@ -353,15 +348,9 @@
             margin-bottom: 5px;
         }
 
-        .group-link {
+        .group-code {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .group-link:hover {
-            color: #4facfe;
+            font-size: 0.9em;
         }
 
         .members-list {
@@ -609,13 +598,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
-
-        .success-message {
-            color: #4ade80;
-            font-size: 0.9em;
-            margin-top: 10px;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -626,6 +608,7 @@
         <div class="welcome-screen" id="welcomeScreen">
             <h1>FAMILY GROUP</h1>
             <p class="subtitle">Семейный мессенджер для близких</p>
+            <button class="btn" onclick="showJoinGroup()">Ввести код</button>
             <button class="btn btn-secondary" onclick="showCreateGroup()">Создать группу</button>
         </div>
 
@@ -641,6 +624,11 @@
 
             <input type="text" class="input-field" id="groupName" placeholder="Название группы">
 
+            <div class="code-option">
+                <input type="text" class="input-field" id="customCode" placeholder="Введите свой код (6 символов)" maxlength="6" style="flex: 1;">
+                <button class="btn" onclick="generateCode()" style="margin: 0;">Генерировать</button>
+            </div>
+
             <div class="captcha-box">
                 <span class="captcha-question">Вы человек?</span>
                 <input type="checkbox" id="captcha">
@@ -653,17 +641,24 @@
                 <div class="spinner"></div>
                 <p>Создаём вашу семейную группу...</p>
             </div>
+        </div>
 
-            <div class="link-box" id="linkBox">
-                <h3 style="color: white; margin-bottom: 10px;">🎉 Группа создана!</h3>
-                <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 10px;">
-                    Поделитесь этой ссылкой с семьёй:
-                </p>
-                <div class="link-display" id="groupLink"></div>
-                <button class="btn copy-btn" onclick="copyLink()">Скопировать ссылку</button>
-                <p class="success-message" id="copySuccess">✓ Ссылка скопирована!</p>
-                <button class="btn" onclick="proceedToRoleSelect()" style="margin-top: 15px;">Продолжить</button>
+        <!-- Join Group Screen -->
+        <div class="join-group-screen" id="joinGroupScreen">
+            <h1>Вход в группу</h1>
+            
+            <input type="text" class="input-field" id="joinCode" placeholder="Введите код группы" maxlength="6">
+
+            <div class="captcha-box">
+                <span class="captcha-question">Вы человек?</span>
+                <input type="checkbox" id="joinCaptcha">
             </div>
+
+            <button class="btn btn-secondary" onclick="joinGroup()">Войти</button>
+            <button class="btn back-btn" onclick="showWelcome()">Назад</button>
+            
+            <button class="btn debug-btn" onclick="showDebugInfo()">Показать доступные группы</button>
+            <div class="debug-info" id="debugInfo" style="display: none;"></div>
         </div>
 
         <!-- Role Select Screen -->
@@ -716,7 +711,7 @@
                 <div class="sidebar-header">
                     <div class="group-avatar" id="sidebarGroupAvatar">FG</div>
                     <div class="group-name" id="sidebarGroupName">Family Group</div>
-                    <div class="group-link" id="sidebarGroupLink" onclick="copyGroupLink()">🔗 Скопировать ссылку</div>
+                    <div class="group-code" id="sidebarGroupCode">Код: ------</div>
                 </div>
                 <div class="members-list" id="membersList">
                     <!-- Members will be added here -->
@@ -743,336 +738,6 @@
 
     <!-- Particles.js -->
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getDatabase, ref, set, push, onValue, get } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
-
-        // ВАША НАСТОЯЩАЯ КОНФИГУРАЦИЯ FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyDxBISBXEgZB414MGmc-sJ7JOD0_EdoBpE",
-            authDomain: "familygroup-afe7c.firebaseapp.com",
-            databaseURL: "https://familygroup-afe7c-default-rtdb.firebaseio.com",
-            projectId: "familygroup-afe7c",
-            storageBucket: "familygroup-afe7c.firebasestorage.app",
-            messagingSenderId: "774085482588",
-            appId: "1:774085482588:web:93126a2fcc05fb7706ee99",
-            measurementId: "G-E6SG9WJ365"
-        };
-
-        // Инициализация Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        console.log('🎉 Firebase успешно подключён!');
-
-        // Global variables
-        window.currentGroup = null;
-        window.currentUser = null;
-        window.groupAvatar = null;
-        window.currentGroupId = null;
-
-        // Generate unique code
-        window.generateUniqueCode = function() {
-            return 'G' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 3).toUpperCase();
-        };
-
-        // Create group link
-        window.createGroupLink = function(groupId) {
-            return window.location.origin + window.location.pathname + '?group=' + groupId;
-        };
-
-        // Screen navigation
-        window.showWelcome = function() {
-            document.getElementById('welcomeScreen').style.display = 'block';
-            document.getElementById('createGroupScreen').style.display = 'none';
-            document.getElementById('roleSelectScreen').style.display = 'none';
-            document.getElementById('messengerScreen').style.display = 'none';
-        };
-
-        window.showCreateGroup = function() {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('createGroupScreen').style.display = 'block';
-        };
-
-        // Avatar preview
-        window.previewAvatar = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    window.groupAvatar = e.target.result;
-                    const avatarDiv = document.querySelector('.avatar-upload');
-                    avatarDiv.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-
-        // Create group
-        window.createGroup = async function() {
-            const groupName = document.getElementById('groupName').value;
-            const captcha = document.getElementById('captcha').checked;
-
-            if (!groupName) {
-                alert('Введите название группы!');
-                return;
-            }
-
-            if (!captcha) {
-                alert('Подтвердите, что вы человек!');
-                return;
-            }
-
-            document.getElementById('createLoading').style.display = 'block';
-
-            try {
-                const groupId = window.generateUniqueCode();
-                const groupData = {
-                    name: groupName,
-                    avatar: window.groupAvatar || null,
-                    createdAt: Date.now()
-                };
-
-                console.log('Создаём группу:', groupId, groupData);
-                await set(ref(database, 'groups/' + groupId), groupData);
-                console.log('✅ Группа создана успешно!');
-
-                window.currentGroupId = groupId;
-                window.currentGroup = groupData;
-
-                const link = window.createGroupLink(groupId);
-                document.getElementById('groupLink').textContent = link;
-                document.getElementById('createLoading').style.display = 'none';
-                document.getElementById('linkBox').style.display = 'block';
-            } catch (error) {
-                console.error('❌ Ошибка:', error);
-                alert('Ошибка создания группы!\n\n' + error.message);
-                document.getElementById('createLoading').style.display = 'none';
-            }
-        };
-
-        // Copy link
-        window.copyLink = function() {
-            const link = document.getElementById('groupLink').textContent;
-            navigator.clipboard.writeText(link).then(() => {
-                const successMsg = document.getElementById('copySuccess');
-                successMsg.style.display = 'block';
-                setTimeout(() => successMsg.style.display = 'none', 2000);
-            });
-        };
-
-        // Copy group link from messenger
-        window.copyGroupLink = function() {
-            const link = window.createGroupLink(window.currentGroupId);
-            navigator.clipboard.writeText(link).then(() => {
-                alert('Ссылка скопирована! 🎉\n\n' + link);
-            });
-        };
-
-        // Proceed to role selection
-        window.proceedToRoleSelect = function() {
-            document.getElementById('createGroupScreen').style.display = 'none';
-            document.getElementById('roleSelectScreen').style.display = 'block';
-        };
-
-        // Select role
-        window.selectedRole = null;
-        window.selectedIcon = null;
-
-        window.selectRole = function(role, icon) {
-            window.selectedRole = role;
-            window.selectedIcon = icon;
-            
-            document.querySelectorAll('.role-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-        };
-
-        // Enter messenger
-        window.enterMessenger = async function() {
-            const name = document.getElementById('memberName').value;
-
-            if (!window.selectedRole) {
-                alert('Выберите вашу роль в семье!');
-                return;
-            }
-
-            if (!name) {
-                alert('Введите ваше имя!');
-                return;
-            }
-
-            window.currentUser = {
-                name: name,
-                role: window.selectedRole,
-                icon: window.selectedIcon,
-                id: 'user_' + Date.now()
-            };
-
-            try {
-                console.log('Добавляем пользователя:', window.currentUser);
-                await set(ref(database, 'groups/' + window.currentGroupId + '/members/' + window.currentUser.id), window.currentUser);
-                console.log('✅ Пользователь добавлен!');
-
-                document.getElementById('roleSelectScreen').style.display = 'none';
-                document.getElementById('messengerScreen').style.display = 'flex';
-
-                window.initializeMessenger();
-            } catch (error) {
-                console.error('❌ Ошибка:', error);
-                alert('Ошибка входа в группу!\n\n' + error.message);
-            }
-        };
-
-        // Initialize messenger
-        window.initializeMessenger = function() {
-            const groupNameEls = document.querySelectorAll('#sidebarGroupName, #chatGroupName');
-            groupNameEls.forEach(el => el.textContent = window.currentGroup.name);
-
-            const avatarEls = document.querySelectorAll('#sidebarGroupAvatar, #chatGroupAvatar');
-            if (window.currentGroup.avatar) {
-                avatarEls.forEach(el => {
-                    el.innerHTML = `<img src="${window.currentGroup.avatar}" alt="Group">`;
-                });
-            } else {
-                avatarEls.forEach(el => {
-                    el.textContent = window.currentGroup.name.substring(0, 2).toUpperCase();
-                });
-            }
-
-            console.log('👥 Подключаемся к участникам...');
-            onValue(ref(database, 'groups/' + window.currentGroupId + '/members'), (snapshot) => {
-                const members = snapshot.val() || {};
-                console.log('Участники обновлены:', Object.keys(members).length);
-                window.loadMembers(members);
-            });
-
-            console.log('💬 Подключаемся к сообщениям...');
-            onValue(ref(database, 'groups/' + window.currentGroupId + '/messages'), (snapshot) => {
-                const messages = snapshot.val() || {};
-                console.log('Сообщений:', Object.keys(messages).length);
-                window.loadMessages(messages);
-            });
-        };
-
-        // Load members
-        window.loadMembers = function(members) {
-            const membersList = document.getElementById('membersList');
-            membersList.innerHTML = '';
-
-            Object.values(members).forEach(member => {
-                const memberDiv = document.createElement('div');
-                memberDiv.className = 'member-item';
-                memberDiv.innerHTML = `
-                    <div class="member-avatar">${member.icon}</div>
-                    <div class="member-info">
-                        <div class="member-name">${member.name}</div>
-                        <div class="member-role">${member.role}</div>
-                    </div>
-                `;
-                membersList.appendChild(memberDiv);
-            });
-        };
-
-        // Load messages
-        window.loadMessages = function(messages) {
-            const chatMessages = document.getElementById('chatMessages');
-            const currentScroll = chatMessages.scrollTop;
-            const isAtBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= currentScroll + 50;
-            
-            chatMessages.innerHTML = '';
-
-            const sortedMessages = Object.entries(messages)
-                .sort(([, a], [, b]) => a.timestamp - b.timestamp);
-
-            sortedMessages.forEach(([id, msg]) => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message';
-                messageDiv.innerHTML = `
-                    <div class="message-avatar">${msg.userIcon}</div>
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-author">${msg.userName}</span>
-                            <span class="message-role">${msg.userRole}</span>
-                            <span class="message-time">${msg.time}</span>
-                        </div>
-                        <div class="message-text">${msg.text}</div>
-                    </div>
-                `;
-                chatMessages.appendChild(messageDiv);
-            });
-
-            if (isAtBottom || sortedMessages.length <= 1) {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        };
-
-        // Send message
-        window.sendMessage = async function() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-
-            if (!text) return;
-
-            const message = {
-                userName: window.currentUser.name,
-                userRole: window.currentUser.role,
-                userIcon: window.currentUser.icon,
-                text: text,
-                time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-                timestamp: Date.now()
-            };
-
-            try {
-                const newMessageRef = push(ref(database, 'groups/' + window.currentGroupId + '/messages'));
-                await set(newMessageRef, message);
-                console.log('✅ Сообщение отправлено');
-                input.value = '';
-            } catch (error) {
-                console.error('❌ Ошибка отправки:', error);
-                alert('Ошибка отправки сообщения!\n\n' + error.message);
-            }
-        };
-
-        // Enter key to send
-        document.addEventListener('DOMContentLoaded', function() {
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        window.sendMessage();
-                    }
-                });
-            }
-
-            // Check for group in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const groupId = urlParams.get('group');
-            
-            if (groupId) {
-                console.log('🔗 Переход по ссылке группы:', groupId);
-                get(ref(database, 'groups/' + groupId)).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        window.currentGroupId = groupId;
-                        window.currentGroup = snapshot.val();
-                        console.log('✅ Группа найдена:', window.currentGroup.name);
-                        document.getElementById('welcomeScreen').style.display = 'none';
-                        document.getElementById('roleSelectScreen').style.display = 'block';
-                    } else {
-                        console.error('❌ Группа не найдена');
-                        alert('Группа не найдена! Создайте новую группу.');
-                    }
-                }).catch((error) => {
-                    console.error('❌ Ошибка загрузки группы:', error);
-                    alert('Ошибка загрузки группы!\n\n' + error.message);
-                });
-            }
-        });
-    </script>
-
     <script>
         // Particles configuration
         particlesJS('particles-js', {
@@ -1113,7 +778,347 @@
             },
             retina_detect: true
         });
+
+        // Global variables
+        let currentGroup = null;
+        let currentUser = null;
+        let groupAvatar = null;
+
+        // Screen navigation
+        function showWelcome() {
+            document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('createGroupScreen').style.display = 'none';
+            document.getElementById('joinGroupScreen').style.display = 'none';
+            document.getElementById('roleSelectScreen').style.display = 'none';
+            document.getElementById('messengerScreen').style.display = 'none';
+        }
+
+        function showCreateGroup() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('createGroupScreen').style.display = 'block';
+        }
+
+        function showJoinGroup() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('joinGroupScreen').style.display = 'block';
+        }
+
+        // Avatar preview
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    groupAvatar = e.target.result;
+                    const avatarDiv = document.querySelector('.avatar-upload');
+                    avatarDiv.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Generate random code
+        function generateCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('customCode').value = code;
+        }
+
+        // Create group
+        function createGroup() {
+            const groupName = document.getElementById('groupName').value;
+            const code = document.getElementById('customCode').value.toUpperCase();
+            const captcha = document.getElementById('captcha').checked;
+
+            if (!groupName) {
+                alert('Введите название группы!');
+                return;
+            }
+
+            if (code.length !== 6) {
+                alert('Код должен содержать 6 символов!');
+                return;
+            }
+
+            if (!captcha) {
+                alert('Подтвердите, что вы человек!');
+                return;
+            }
+
+            // Check if code already exists
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            if (savedGroups[code]) {
+                alert('Группа с таким кодом уже существует! Попробуйте другой код.');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('createLoading').style.display = 'block';
+
+            // Simulate creation
+            setTimeout(() => {
+                currentGroup = {
+                    name: groupName,
+                    code: code,
+                    avatar: groupAvatar,
+                    members: [],
+                    messages: [],
+                    createdAt: Date.now()
+                };
+
+                // Save to localStorage immediately
+                saveGroup();
+                
+                console.log('Группа создана:', currentGroup);
+                console.log('Сохранённые группы:', JSON.parse(localStorage.getItem('familyGroups')));
+
+                // Show role selection
+                document.getElementById('createLoading').style.display = 'none';
+                document.getElementById('createGroupScreen').style.display = 'none';
+                document.getElementById('roleSelectScreen').style.display = 'block';
+            }, 2000);
+        }
+
+        // Join group
+        function joinGroup() {
+            const code = document.getElementById('joinCode').value.toUpperCase();
+            const captcha = document.getElementById('joinCaptcha').checked;
+
+            if (code.length !== 6) {
+                alert('Код должен содержать 6 символов!');
+                return;
+            }
+
+            if (!captcha) {
+                alert('Подтвердите, что вы человек!');
+                return;
+            }
+
+            // Load group from localStorage
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            
+            console.log('Поиск группы с кодом:', code);
+            console.log('Доступные группы:', savedGroups);
+            console.log('Все ключи:', Object.keys(savedGroups));
+            
+            if (savedGroups[code]) {
+                currentGroup = savedGroups[code];
+                console.log('Группа найдена:', currentGroup);
+                document.getElementById('joinGroupScreen').style.display = 'none';
+                document.getElementById('roleSelectScreen').style.display = 'block';
+            } else {
+                console.error('Группа не найдена! Код:', code);
+                alert('Группа с таким кодом не найдена!\n\nВведённый код: ' + code + '\n\nДоступные коды: ' + Object.keys(savedGroups).join(', '));
+            }
+        }
+
+        // Show debug info
+        function showDebugInfo() {
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            const debugInfo = document.getElementById('debugInfo');
+            
+            if (Object.keys(savedGroups).length === 0) {
+                debugInfo.innerHTML = '<strong>Нет сохранённых групп</strong><br>Создайте группу сначала!';
+            } else {
+                let html = '<strong>Доступные группы:</strong><br><br>';
+                for (let code in savedGroups) {
+                    html += `<strong>Код:</strong> ${code}<br>`;
+                    html += `<strong>Название:</strong> ${savedGroups[code].name}<br>`;
+                    html += `<strong>Участников:</strong> ${savedGroups[code].members.length}<br><br>`;
+                }
+                debugInfo.innerHTML = html;
+            }
+            
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Select role
+        let selectedRole = null;
+        let selectedIcon = null;
+
+        function selectRole(role, icon) {
+            selectedRole = role;
+            selectedIcon = icon;
+            
+            // Highlight selected role
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Enter messenger
+        function enterMessenger() {
+            const name = document.getElementById('memberName').value;
+
+            if (!selectedRole) {
+                alert('Выберите вашу роль в семье!');
+                return;
+            }
+
+            if (!name) {
+                alert('Введите ваше имя!');
+                return;
+            }
+
+            currentUser = {
+                name: name,
+                role: selectedRole,
+                icon: selectedIcon,
+                id: Date.now()
+            };
+
+            // Add user to group
+            if (!currentGroup.members.find(m => m.id === currentUser.id)) {
+                currentGroup.members.push(currentUser);
+                saveGroup();
+            }
+
+            // Show messenger
+            document.getElementById('roleSelectScreen').style.display = 'none';
+            document.getElementById('messengerScreen').style.display = 'flex';
+
+            // Initialize messenger
+            initializeMessenger();
+        }
+
+        // Initialize messenger
+        function initializeMessenger() {
+            // Set group info
+            const groupNameEls = document.querySelectorAll('#sidebarGroupName, #chatGroupName');
+            groupNameEls.forEach(el => el.textContent = currentGroup.name);
+            
+            document.getElementById('sidebarGroupCode').textContent = `Код: ${currentGroup.code}`;
+
+            // Set group avatar
+            const avatarEls = document.querySelectorAll('#sidebarGroupAvatar, #chatGroupAvatar');
+            if (currentGroup.avatar) {
+                avatarEls.forEach(el => {
+                    el.innerHTML = `<img src="${currentGroup.avatar}" alt="Group">`;
+                });
+            } else {
+                avatarEls.forEach(el => {
+                    el.textContent = currentGroup.name.substring(0, 2).toUpperCase();
+                });
+            }
+
+            // Load members
+            loadMembers();
+            
+            // Load messages
+            loadMessages();
+
+            // Auto-refresh messages every 2 seconds
+            setInterval(loadMessages, 2000);
+        }
+
+        // Load members
+        function loadMembers() {
+            const membersList = document.getElementById('membersList');
+            membersList.innerHTML = '';
+
+            currentGroup.members.forEach(member => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'member-item';
+                memberDiv.innerHTML = `
+                    <div class="member-avatar">${member.icon}</div>
+                    <div class="member-info">
+                        <div class="member-name">${member.name}</div>
+                        <div class="member-role">${member.role}</div>
+                    </div>
+                `;
+                membersList.appendChild(memberDiv);
+            });
+        }
+
+        // Load messages
+        function loadMessages() {
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            if (savedGroups[currentGroup.code]) {
+                currentGroup.messages = savedGroups[currentGroup.code].messages || [];
+            }
+
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+
+            currentGroup.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">${msg.userIcon}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">${msg.userName}</span>
+                            <span class="message-role">${msg.userRole}</span>
+                            <span class="message-time">${msg.time}</span>
+                        </div>
+                        <div class="message-text">${msg.text}</div>
+                    </div>
+                `;
+                chatMessages.appendChild(messageDiv);
+            });
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const message = {
+                userName: currentUser.name,
+                userRole: currentUser.role,
+                userIcon: currentUser.icon,
+                text: text,
+                time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: Date.now()
+            };
+
+            currentGroup.messages.push(message);
+            saveGroup();
+            loadMessages();
+
+            input.value = '';
+        }
+
+        // Enter key to send
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+
+        // Save group to localStorage
+        function saveGroup() {
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            savedGroups[currentGroup.code] = currentGroup;
+            localStorage.setItem('familyGroups', JSON.stringify(savedGroups));
+        }
+
+        // Load saved group on page load
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+                if (savedGroups[code]) {
+                    document.getElementById('joinCode').value = code;
+                }
+            }
+        });
     </script>
 </body>
 </html>
-
