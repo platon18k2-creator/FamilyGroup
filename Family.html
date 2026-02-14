@@ -263,6 +263,25 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .debug-btn {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 20px;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -637,6 +656,9 @@
 
             <button class="btn btn-secondary" onclick="joinGroup()">Войти</button>
             <button class="btn back-btn" onclick="showWelcome()">Назад</button>
+            
+            <button class="btn debug-btn" onclick="showDebugInfo()">Показать доступные группы</button>
+            <div class="debug-info" id="debugInfo" style="display: none;"></div>
         </div>
 
         <!-- Role Select Screen -->
@@ -808,7 +830,7 @@
         // Create group
         function createGroup() {
             const groupName = document.getElementById('groupName').value;
-            const code = document.getElementById('customCode').value;
+            const code = document.getElementById('customCode').value.toUpperCase();
             const captcha = document.getElementById('captcha').checked;
 
             if (!groupName) {
@@ -826,6 +848,13 @@
                 return;
             }
 
+            // Check if code already exists
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            if (savedGroups[code]) {
+                alert('Группа с таким кодом уже существует! Попробуйте другой код.');
+                return;
+            }
+
             // Show loading
             document.getElementById('createLoading').style.display = 'block';
 
@@ -836,11 +865,15 @@
                     code: code,
                     avatar: groupAvatar,
                     members: [],
-                    messages: []
+                    messages: [],
+                    createdAt: Date.now()
                 };
 
-                // Save to localStorage
+                // Save to localStorage immediately
                 saveGroup();
+                
+                console.log('Группа создана:', currentGroup);
+                console.log('Сохранённые группы:', JSON.parse(localStorage.getItem('familyGroups')));
 
                 // Show role selection
                 document.getElementById('createLoading').style.display = 'none';
@@ -851,7 +884,7 @@
 
         // Join group
         function joinGroup() {
-            const code = document.getElementById('joinCode').value;
+            const code = document.getElementById('joinCode').value.toUpperCase();
             const captcha = document.getElementById('joinCaptcha').checked;
 
             if (code.length !== 6) {
@@ -867,13 +900,39 @@
             // Load group from localStorage
             const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
             
+            console.log('Поиск группы с кодом:', code);
+            console.log('Доступные группы:', savedGroups);
+            console.log('Все ключи:', Object.keys(savedGroups));
+            
             if (savedGroups[code]) {
                 currentGroup = savedGroups[code];
+                console.log('Группа найдена:', currentGroup);
                 document.getElementById('joinGroupScreen').style.display = 'none';
                 document.getElementById('roleSelectScreen').style.display = 'block';
             } else {
-                alert('Группа с таким кодом не найдена!');
+                console.error('Группа не найдена! Код:', code);
+                alert('Группа с таким кодом не найдена!\n\nВведённый код: ' + code + '\n\nДоступные коды: ' + Object.keys(savedGroups).join(', '));
             }
+        }
+
+        // Show debug info
+        function showDebugInfo() {
+            const savedGroups = JSON.parse(localStorage.getItem('familyGroups') || '{}');
+            const debugInfo = document.getElementById('debugInfo');
+            
+            if (Object.keys(savedGroups).length === 0) {
+                debugInfo.innerHTML = '<strong>Нет сохранённых групп</strong><br>Создайте группу сначала!';
+            } else {
+                let html = '<strong>Доступные группы:</strong><br><br>';
+                for (let code in savedGroups) {
+                    html += `<strong>Код:</strong> ${code}<br>`;
+                    html += `<strong>Название:</strong> ${savedGroups[code].name}<br>`;
+                    html += `<strong>Участников:</strong> ${savedGroups[code].members.length}<br><br>`;
+                }
+                debugInfo.innerHTML = html;
+            }
+            
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
         }
 
         // Select role
